@@ -1,0 +1,17 @@
+{
+  "name": "hello-lucid-agents-solana",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run agent.ts",
+    "start": "bun run agent.ts"
+  },
+  "dependencies": {
+    "hono": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "@types/bun": "latest"
+  }
+}

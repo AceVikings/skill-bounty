@@ -1,0 +1,39 @@
+{
+  "name": "solana-agent-frameworks-skill",
+  "version": "1.0.0",
+  "description": "Comparative guide + runnable cookbook for shipping AI agents on Solana. Covers ElizaOS, Lucid Agents, Swarms, ZerePy, SendAI solana-agent-kit, x402, Solana Actions/Blinks, Dialect messaging, and agent-wallet providers. Verified against live sources 2026-06-24.",
+  "license": "MIT",
+  "keywords": [
+    "solana",
+    "ai",
+    "agent",
+    "elizaos",
+    "lucid-agents",
+    "swarms",
+    "zerepy",
+    "sendai",
+    "solana-agent-kit",
+    "x402",
+    "blinks",
+    "solana-actions",
+    "dialect",
+    "mcpay",
+    "crossmint",
+    "claude",
+    "claude-code",
+    "agentic",
+    "ai-agents"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "AceVikings",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AceVikings/solana-agent-frameworks-skill"
+  },
+  "scripts": {
+    "validate": "bash scripts/validate-skill.sh",
+    "check-versions": "bash scripts/check-versions.sh"
+  }
+}

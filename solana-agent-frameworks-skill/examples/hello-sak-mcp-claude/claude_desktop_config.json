@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "solana-mcp": {
+      "command": "npx",
+      "args": ["-y", "solana-agent-kit@latest", "mcp"],
+      "env": {
+        "RPC_URL": "https://api.mainnet-beta.solana.com",
+        "SOLANA_PRIVATE_KEY": "<base58-dev-only-wallet>"
+      }
+    }
+  }
+}

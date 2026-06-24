@@ -1,0 +1,20 @@
+{
+  "name": "hello-elizaos-solana",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "elizaos dev",
+    "build": "elizaos build",
+    "start": "node dist/index.js",
+    "test": "elizaos test"
+  },
+  "dependencies": {
+    "@elizaos/core": "beta",
+    "@elizaos/plugin-solana": "1.2.6",
+    "@elizaos/plugin-twitter": "1.2.22"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

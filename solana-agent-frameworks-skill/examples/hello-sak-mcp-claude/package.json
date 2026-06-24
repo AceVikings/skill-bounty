@@ -1,0 +1,22 @@
+{
+  "name": "hello-sak-mcp-claude",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "solana-agent-kit": "2.0.9",
+    "@solana-agent-kit/plugin-token": "2.0.9",
+    "@solana-agent-kit/plugin-defi": "2.0.8",
+    "@solana-agent-kit/plugin-misc": "2.0.6",
+    "@solana-agent-kit/plugin-blinks": "2.0.5",
+    "@solana/web3.js": "latest",
+    "bs58": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/node": "latest"
+  }
+}

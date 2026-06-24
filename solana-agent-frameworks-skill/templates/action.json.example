@@ -1,0 +1,18 @@
+{
+  "icon": "https://your-domain.com/icon.png",
+  "title": "Swap 0.1 SOL to USDC",
+  "description": "Via Jupiter aggregator",
+  "label": "Swap",
+  "links": {
+    "actions": [
+      {
+        "label": "0.1 SOL",
+        "href": "/api/action/swap?amount=0.1"
+      },
+      {
+        "label": "1 SOL",
+        "href": "/api/action/swap?amount=1.0"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "hello-x402-buyer-with-mcpay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "ts-node buyer.ts"
+  },
+  "dependencies": {
+    "mcpay": "0.1.17",
+    "@x402/core": "2.16.0"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "@types/node": "latest"
+  }
+}
