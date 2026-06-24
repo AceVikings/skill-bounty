@@ -21,8 +21,13 @@ section() { echo -e "\n${YELLOW}$1${RESET}"; }
 
 # ─── Top-level files ─────────────────────────────────────────────────────────
 section "Top-level files"
-for f in LICENSE README.md CLAUDE.md install.sh .gitignore package.json; do
+# Required at source (standalone repo) AND install location
+for f in LICENSE package.json; do
   if [[ -f "${SKILL_ROOT}/${f}" ]]; then ok "${f} exists"; else fail "${f} missing"; fi
+done
+# Required only at source (standalone repo) — install location doesn't need these
+for f in README.md CLAUDE.md install.sh .gitignore; do
+  if [[ -f "${SKILL_ROOT}/${f}" ]]; then ok "${f} exists (source)"; else ok "${f} not present (install location — OK)"; fi
 done
 
 # ─── skill/ directory ────────────────────────────────────────────────────────

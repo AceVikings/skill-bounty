@@ -53,6 +53,8 @@ The **canonical Solana agent toolkit**. 60+ typed actions across token ops, NFTs
 | **blinks** | `@solana-agent-kit/plugin-blinks@2.0.5` (latest) ✓ | `executeBlink` (consumes Solana Actions) |
 
 > ⚠ **DeBridge + OKX DEX** — `14-frameworks-sak.md` (v1) listed `@solana-agent-kit/plugin-debridge` and `@solana-agent-kit/plugin-okx-dex` as standalone npm packages, but **neither exists on the npm registry** as of 2026-06-24. They may live in the SAK monorepo as workspace-internal plugins. Skip them.
+>
+> ⚠ **`TurnkeyWallet` / `PrivyWallet` are NOT exported by SAK 2.0.9.** SAK 2.0.9 only exports `KeypairWallet`. For production wallets, implement the `BaseWallet` interface (defined in SAK) against your wallet SDK (Turnkey / Privy / Crossmint). See `examples/hello-sak-mcp-claude/index.ts` for the Turnkey skeleton.
 
 ## Dependencies (verified)
 
@@ -96,11 +98,14 @@ const tools = createVercelAITools(agent, agent.actions);
 
 ## Production: which wallet to use
 
-| Wallet | When | Trust model |
+| Wallet | How | Trust model |
 |---|---|---|
-| `KeypairWallet` | dev / test / throwaway | key in env (DO NOT use in prod) |
-| `TurnkeyWallet` | production agent with policy engine (spend caps, allowlist) | key sharded via Turnkey |
-| `PrivyWallet` | production agent with human-in-loop confirmation | key in Privy; requires user auth |
+| `KeypairWallet` (SAK 2.0.9) | dev / test / throwaway | key in env (DO NOT use in prod) |
+| Custom `BaseWallet` for Turnkey | implement `BaseWallet` interface → wrap `@turnkey/sdk-server` | key sharded via Turnkey (policy engine: spend caps, allowlist) |
+| Custom `BaseWallet` for Privy | implement `BaseWallet` interface → wrap `@privy-io/sdk` | key in Privy (human-in-loop confirmation) |
+| Custom `BaseWallet` for Crossmint | implement `BaseWallet` interface → wrap `@crossmint/wallets-sdk` | consumer UX (email/passkey) |
+
+> ⚠ **SAK 2.0.9 does not export `TurnkeyWallet` or `PrivyWallet`.** Both were referenced in older docs and earlier SAK versions. Use the `BaseWallet` pattern shown in `examples/hello-sak-mcp-claude/index.ts`.
 
 ## V1 vs V2
 

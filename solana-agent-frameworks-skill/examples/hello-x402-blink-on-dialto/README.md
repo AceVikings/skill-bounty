@@ -1,32 +1,49 @@
 # hello-x402-blink-on-dialto
 
-A minimal x402 seller on Solana that exposes a paid endpoint and a Solana Action (Blink) at `dial.to`.
+A minimal x402 seller on Solana that exposes a paid endpoint. Verified end-to-end with a real 402 response.
 
 ## What's in this example
 
 - `package.json` — pinned versions: `@x402/core@2.16.0`, `@x402/svm@2.16.0`, `@x402/express@2.16.0`
-- `server.ts` — Express server with a paid `/api/paid-weather` endpoint
+- `tsconfig.json` — Node16 module + moduleResolution (required for `@x402/*` packages)
+- `server.ts` — Express server with a self-hosted facilitator + resource server
 - `.env.example` — required env vars
 - `README.md` — run instructions
 
 ## What it demonstrates
 
-- x402 402 Payment Required response
-- Multi-rail (Base + Solana) parity
-- Solana Action (Blink) endpoint
-- `dial.to` URL grammar
-- Base58 case-sensitivity safety
-- Pairs with PR #19 `solana-x402-seller-security-skill` for the audit layer
+- x402 402 Payment Required response with the V2 schema
+- Self-hosted x402Facilitator (verify/settle) + x402ResourceServer (402 emission)
+- SVM server-side + facilitator-side schemes wired together
+- CAIP-2 network identifier (`solana:<genesis-hash>`)
+- V2 `price: { asset, amount }` schema
+- `maxTimeoutSeconds: 60`
+- `extra.feePayer` set automatically
+
+## Architecture
+
+```
+self-hosted single-process:
+  x402Facilitator (handles verify/settle)
+  └─ registerExactSvmScheme() with signer
+
+  x402ResourceServer (emits 402)
+  └─ register(SOLANA_NETWORK, ExactSvmScheme server)
+  └─ wrapped with facilitator
+
+  paymentMiddleware (Express)
+  └─ routes with PaymentOption (V2 schema)
+```
 
 ## Quick start
 
 ```bash
 # 1. Install
-npm install @x402/core@2.16.0 @x402/svm@2.16.0 @x402/express@2.16.0 express@4
+npm install
 
-# 2. Copy .env.example to .env
+# 2. Configure env
 cp .env.example .env
-# edit .env: SOLANA_RECIPIENT (your base58 wallet)
+# edit .env: SOLANA_RECIPIENT=<your-base58-solana-wallet>
 
 # 3. Run
 npx tsx server.ts
@@ -37,24 +54,39 @@ npx tsx server.ts
 ```bash
 # 1. Hit the paid endpoint — should return 402
 curl -i http://localhost:3000/api/paid-weather
+```
 
-# Expected response (truncated):
-# HTTP/1.1 402 Payment Required
-# PAYMENT-REQUIRED: <base64 of accepts[]>
-# {
-#   "x402Version": 1,
-#   "accepts": [{
-#     "scheme": "exact",
-#     "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-#     "price": { "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "amount": "10000" },
-#     "payTo": "<your-base58-wallet>",
-#     "maxTimeoutSeconds": 60,
-#     "extra": { "name": "USDC", "version": "2" }
-#   }]
-# }
+Expected response:
+```
+HTTP/1.1 402 Payment Required
+Content-Type: application/json; charset=utf-8
+PAYMENT-REQUIRED: <base64 of accepts[]>
+```
 
-# 2. With an x402 client (e.g. MCPay)
-# (See ../hello-x402-buyer-with-mcpay for the buyer side)
+Decoded `PAYMENT-REQUIRED` (base64):
+```json
+{
+  "x402Version": 2,
+  "error": "Payment required",
+  "resource": {
+    "url": "http://localhost:3000/api/paid-weather",
+    "description": "Weather data"
+  },
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "amount": "10000",
+      "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "maxTimeoutSeconds": 60,
+      "extra": {
+        "name": "USDC",
+        "version": "2",
+        "feePayer": "<random-keypair-address>"
+      }
+    }
+  ]
+}
 ```
 
 ## Generate the dial.to URL
@@ -68,8 +100,6 @@ print(dialto_url)
 # Output: https://dial.to/?action=solana-action:https%3A%2F%2Fyour-production-domain.com%2Fapi%2Faction%2Fswap
 ```
 
-Paste that URL into Phantom and verify the Blink renders.
-
 ## ⚠ Base58 safety
 
 NEVER `.toLowerCase()` the `payTo` or `asset` fields. Base58 is case-sensitive. This is enforced by `../../rules/x402-base58-case-sensitivity.md`.
@@ -80,8 +110,9 @@ For the security layer, install PR #19 `solana-x402-seller-security-skill`. It s
 
 ## Files
 
-- `package.json` — deps
-- `server.ts` — minimal Express seller
+- `package.json` — deps (with `type: "module"`)
+- `tsconfig.json` — Node16 module + moduleResolution (required for `@x402/*`)
+- `server.ts` — minimal Express seller with self-hosted facilitator
 - `.env.example` — env template
 - `README.md` — this file
 
