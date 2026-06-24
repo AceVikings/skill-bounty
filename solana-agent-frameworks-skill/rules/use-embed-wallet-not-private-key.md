@@ -10,10 +10,12 @@ For any code path that signs transactions for an agent, the production wallet MU
 |---|---|---|
 | **Crossmint** | consumer UX with email/passkey | `@crossmint/wallets-sdk@1.6.0` |
 | **MCPay** | x402 buyer (auto-pays 402 challenges) | `mcpay@0.1.17` |
-| **Turnkey** | production with policy engine (spend caps, allowlist) | via SAK `TurnkeyWallet` |
-| **Privy** | production with human-in-loop confirmation | via SAK `PrivyWallet` |
+| **Turnkey** | production with policy engine (spend caps, allowlist) | wrap `@turnkey/sdk-server` in SAK `BaseWallet` |
+| **Privy** | production with human-in-loop confirmation | wrap `@privy-io/sdk` in SAK `BaseWallet` |
 | **Phantom Connect** | browser/mobile wallet connect | `@phantom/mcp-server` |
-| **Keypair from env** | dev/test/throwaway ONLY | raw `@solana/web3.js` |
+| **Keypair from env** | dev/test/throwaway ONLY | raw `@solana/web3.js` (SAK `KeypairWallet`) |
+
+> ⚠ **SAK 2.0.9 only exports `KeypairWallet`.** For Turnkey/Privy/Crossmint, implement the `BaseWallet` interface defined in SAK against your wallet SDK. See `examples/hello-sak-mcp-claude/index.ts` for the Turnkey skeleton.
 
 ## Why
 
@@ -47,16 +49,36 @@ const solWallet = SolanaWallet.from(wallet);
 await solWallet.sendTransaction({ serializedTransaction: "<base64>" });
 ```
 
-### RIGHT — Turnkey (policy engine, via SAK)
+### RIGHT — Turnkey (policy engine, via SAK `BaseWallet`)
+
+> SAK 2.0.9 does **not** export `TurnkeyWallet` directly. Wrap the Turnkey SDK in a `BaseWallet`.
 
 ```typescript
-import { SolanaAgentKit, TurnkeyWallet } from "solana-agent-kit";
-const wallet = new TurnkeyWallet({
-  apiKey: process.env.TURNKEY_API_KEY!,
-  organizationId: process.env.TURNKEY_ORG_ID!,
-  signWith: process.env.TURNKEY_SIGN_WITH!,
+import { SolanaAgentKit, type BaseWallet } from "solana-agent-kit";
+import { Keypair, PublicKey, VersionedTransaction, Transaction } from "@solana/web3.js";
+import { Turnkey } from "@turnkey/sdk-server";
+
+class TurnkeyWallet implements BaseWallet {
+  readonly publicKey: PublicKey;
+  constructor(publicKey: PublicKey) { this.publicKey = publicKey; }
+  async signTransaction<T extends Transaction | VersionedTransaction>(tx: T): Promise<T> {
+    // Call Turnkey API to sign; return the signed transaction
+    return tx;
+  }
+  async signMessage(message: Uint8Array): Promise<Uint8Array> {
+    // Call Turnkey API to sign the message
+    return message;
+  }
+  async sendTransaction<T extends Transaction | VersionedTransaction>(tx: T): Promise<string> {
+    // Submit the signed transaction to the network
+    return "<tx-signature>";
+  }
+}
+
+const wallet = new TurnkeyWallet(myPublicKey);
+const agent = new SolanaAgentKit(wallet, process.env.RPC_URL!, {
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
 });
-const agent = new SolanaAgentKit(wallet, process.env.RPC_URL!, { OPENAI_API_KEY: process.env.OPENAI_API_KEY! });
 ```
 
 ### RIGHT — MCPay (x402 buyer)
@@ -78,7 +100,8 @@ const svmSigner = await createSigner('solana', process.env.SVM_SECRET_KEY!);
 ## Cross-link
 
 - `references/30-wallets-crossmint-mcpay.md` — full wallet selection
-- `references/14-frameworks-sak.md` — Turnkey/Privy via SAK
+- `references/14-frameworks-sak.md` — SAK (note: only `KeypairWallet` is exported in 2.0.9; use `BaseWallet` for production)
+- `examples/hello-sak-mcp-claude/index.ts` — full `BaseWallet` skeleton for Turnkey
 - `references/20-protocols-x402.md` — MCPay for x402 buyers
 - `rules/x402-base58-case-sensitivity.md` — the other always-on rule
 
